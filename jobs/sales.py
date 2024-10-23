@@ -17,8 +17,35 @@ sys.path.insert(1, project_dir)
 from classes import class_pyspark
 
 
-def main():
-    class_pyspark.Sparkclass({}).sparkStart({})
+def main(project_dir:str) -> None:
+    """starts a spark job"""
+    config = openFile(f"{project_dir}/json/sales.json")
+    spark = sparkStart(config)
+
+    transactionDf = importData(spark, f'{project_dir}/test-data/sales/transactions', ".json$")
+
+    sparkStop(spark)
+
+def openFile(filepath: str) -> dict:
+    def openJson(filepath):
+        if isinstance(filepath, str) and os.path.exists(filepath):
+            with open(filepath,"r") as f:
+                data = json.load(f)
+        return data
+    
+    return (openJson(filepath))
+        
+def sparkStart(config:dict) -> SparkSession:
+    if isinstance(config,dict):
+        spark = class_pyspark.Sparkclass({}).sparkStart(config)
+        return spark
+    
+def sparkStop(spark:SparkSession) -> None:
+    spark.stop() if isinstance(spark,SparkSession) else None
+
+def importData(spark:SparkSession,datapath:str,pattern:Optional[str]=None) -> DataFrame:
+    if isinstance(spark,SparkSession):
+        return class_pyspark.Sparkclass({}).importData(spark, datapath, pattern)
 
 if __name__ == '__main__':
-    main()
+    main(project_dir)
