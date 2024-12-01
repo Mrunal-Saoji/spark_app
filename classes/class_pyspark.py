@@ -58,15 +58,22 @@ class Sparkclass:
                 elif os.path.isfile(datapath):
                     return 'file'
 
-        def openDirectory(datapath:str,pattern:Optional[str]=None):
+        def openDirectory(spark:SparkSession,getUniqueFileExtension,datapath:str,pattern:Optional[str]=None):
             newlist = Sparkclass(self.config).listDirectory(datapath,pattern)
-            print(newlist)
+            filetype = getUniqueFileExtension(newlist)
+            if filetype:
+                Sparkclass(self.config).createDataFrame( spark, newlist, filetype ) 
 
-        def openFile(datapath:str):
-            pass
+        def openFile(filepath:str):
+            filelist = [filepath]
+
+        def getUniqueFileExtension(filelist:list) -> list:
+            if isinstance(filelist,list) and len(filelist) > 0:
+                exts = list(set(os.path.splitext(f)[1] for f in filelist))
+                return exts[0] if len(exts) == 1 else None
 
         pathtype = fileOrDirectory(datapath)
-        openDirectory(datapath,pattern) if pathtype == "dir" else None
+        openDirectory(getUniqueFileExtension,datapath,pattern) if pathtype == "dir" else None
 
 
     def listDirectory(self,directory,pattern=None) -> list:
@@ -77,11 +84,23 @@ class Sparkclass:
                 for dirpath,dirname,filenames in os.walk(directory):
                     for filename in filenames:
                         filelist.append(f"{dirpath}/{filename}")
+                print("------>")
+                print(filelist)
                 return filelist
             
         def filterFiles(filelist:list,pattern:str):
-            print(pattern)
-            return [x for x in filelist if re.search(f"{pattern}",x)]
+            if filelist:
+                return [x for x in filelist if re.search(f"{pattern}",x)]
+            else:
+                return ["json"]
             
         filelist = recursiveFilelist(directory)
         return filterFiles(filelist,pattern) if (pattern is not None or pattern != "") else filelist
+
+    def createDataFrame(self, spark:SparkSession, fileList: list, filetype:str ) -> DataFrame:
+        print("inside dataframe")
+        def dfFromCSV(fileList:list) -> DataFrame:
+            pass
+
+        def dfFromJSON():
+            pass
