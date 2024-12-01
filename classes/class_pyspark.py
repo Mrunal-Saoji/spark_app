@@ -68,12 +68,13 @@ class Sparkclass:
             filelist = [filepath]
 
         def getUniqueFileExtension(filelist:list) -> list:
-            if isinstance(filelist,list) and len(filelist) > 0:
-                exts = list(set(os.path.splitext(f)[1] for f in filelist))
-                return exts[0] if len(exts) == 1 else None
+            # if isinstance(filelist,list) and len(filelist) > 0:
+                
+            exts = list(set(os.path.splitext(f)[1] for f in filelist))
+            return exts[0] if len(exts) == 1 else None
 
         pathtype = fileOrDirectory(datapath)
-        openDirectory(getUniqueFileExtension,datapath,pattern) if pathtype == "dir" else None
+        openDirectory(spark,getUniqueFileExtension,datapath,pattern) if pathtype == "dir" else None
 
 
     def listDirectory(self,directory,pattern=None) -> list:
@@ -84,7 +85,6 @@ class Sparkclass:
                 for dirpath,dirname,filenames in os.walk(directory):
                     for filename in filenames:
                         filelist.append(f"{dirpath}/{filename}")
-                print("------>")
                 print(filelist)
                 return filelist
             
