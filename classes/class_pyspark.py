@@ -62,19 +62,29 @@ class Sparkclass:
             newlist = Sparkclass(self.config).listDirectory(datapath,pattern)
             filetype = getUniqueFileExtension(newlist)
             if filetype:
-                Sparkclass(self.config).createDataFrame( spark, newlist, filetype ) 
+                return Sparkclass(self.config).createDataFrame( spark, newlist, filetype ) 
 
-        def openFile(filepath:str):
+        def openFile(getFileExtension:callable,filepath:str):
             filelist = [filepath]
+            fileType = getFileExtension(filepath)
+            return Sparkclass(self.config).createDataFrame( spark, filelist, fileType )
+
 
         def getUniqueFileExtension(filelist:list) -> list:
             # if isinstance(filelist,list) and len(filelist) > 0:
                 
             exts = list(set(os.path.splitext(f)[1] for f in filelist))
-            return exts[0] if len(exts) == 1 else None
+            return exts[0][1:] if len(exts) == 1 else None
 
         pathtype = fileOrDirectory(datapath)
-        openDirectory(spark,getUniqueFileExtension,datapath,pattern) if pathtype == "dir" else None
+        openDirectory(spark,getUniqueFileExtension,datapath,pattern) if pathtype == "dir" else openFile(Sparkclass(self.config).getFileExtension,datapath)
+
+    def getFileExtension(self,filepath) -> str:
+        """ get file extension from single file"""
+        if isinstance(filepath,str) and os.path.exists(filepath):
+            filename, file_ext = os.path.splitext(filepath)
+            print(filename,file_ext)
+            return file_ext[1:] if file_ext else None
 
 
     def listDirectory(self,directory,pattern=None) -> list:
@@ -98,9 +108,15 @@ class Sparkclass:
         return filterFiles(filelist,pattern) if (pattern is not None or pattern != "") else filelist
 
     def createDataFrame(self, spark:SparkSession, fileList: list, filetype:str ) -> DataFrame:
-        print("inside dataframe")
+        print("file type", filetype)
         def dfFromCSV(fileList:list) -> DataFrame:
+            df = spark.read.format("csv").option("header",True).option("mode","DROPMALFORMED").load(fileList)
+            return df
+
+        def dfFromJSON(fileList:list) -> DataFrame:
             pass
 
-        def dfFromJSON():
-            pass
+        if filetype == "csv":
+             return dfFromCSV(fileList) 
+        elif filetype=="json":
+            return dfFromJSON(fileList)

@@ -22,7 +22,9 @@ def main(project_dir:str) -> None:
     config = openFile(f"{project_dir}/json/sales.json")
     spark = sparkStart(config)
 
-    transactionDf = importData(spark, f'{project_dir}/test-data/sales/transactions', ".json$")
+    # transactionDf = importData(spark, f'{project_dir}/test-data/sales/transactions', ".json$")
+    customerDf = importData(spark, f'{project_dir}/test-data/sales/customers.csv')
+
 
     sparkStop(spark)
 
